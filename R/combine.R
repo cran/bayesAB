@@ -8,8 +8,7 @@
 #' @param f a binary function (f(x, y)) used to combine posteriors from bT1 to bT2
 #' @param params a character vector of length 2, corresponding to names of the posterior parameters you want to combine
 #' @param newName a string indicating the name of the new 'posterior' in the resulting object
-#' 
-#' @return a \code{bayesTest} object with the newly combined posterior samples
+#' @return a \code{bayesTest} object with the newly combined posterior samples.
 #' 
 #' @examples 
 #' A_binom <- rbinom(100, 1, .5)
@@ -46,9 +45,9 @@ combine <- function(bT1, bT2, f = `+`, params, newName = 'Parameter') {
   result <- list()
   
   result$inputs <- list(A_data = listConcat(listOr(bT1$inputs$A_data), listOr(bT2$inputs$A_data)),
-                         B_data = listConcat(listOr(bT1$inputs$B_data), listOr(bT2$inputs$B_data)),
-                         priors = 'Combined distributions have no priors. Inspect each element separately for details.',
-                         n_samples = max(bT1$inputs$n_samples, bT2$inputs$n_samples))
+                        B_data = listConcat(listOr(bT1$inputs$B_data), listOr(bT2$inputs$B_data)),
+                        priors = 'Combined distributions have no priors. Inspect each element separately for details.',
+                        n_samples = max(bT1$inputs$n_samples, bT2$inputs$n_samples))
   
   result$posteriors[[newName]] <- list(A = f(A1, A2), B = f(B1, B2))
   

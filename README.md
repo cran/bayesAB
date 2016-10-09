@@ -1,6 +1,6 @@
 # bayesAB
 
-[![Travis-CI Build Status](https://travis-ci.org/FrankPortman/bayesAB.svg?branch=master)](https://travis-ci.org/FrankPortman/bayesAB) [![codecov](https://codecov.io/gh/FrankPortman/bayesAB/branch/master/graph/badge.svg)](https://codecov.io/gh/FrankPortman/bayesAB)
+[![Travis-CI Build Status](https://travis-ci.org/FrankPortman/bayesAB.svg?branch=master)](https://travis-ci.org/FrankPortman/bayesAB) [![codecov](https://codecov.io/gh/FrankPortman/bayesAB/branch/master/graph/badge.svg)](https://codecov.io/gh/FrankPortman/bayesAB) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/bayesAB)](https://CRAN.R-project.org/package=bayesAB)
 
 
 ## Fast Bayesian Methods for AB Testing
@@ -23,11 +23,20 @@ The general bayesAB workflow is as follows:
 - Fit a `bayesTest` object
   - Optional: Use `combine` to munge together several `bayesTest` objects together for an arbitrary / non-analytical target distribution
 - `print`, `plot`, and `summary` to interpret your results
+  - Determine whether to stop your test early given the Posterior Expected Loss in `summary` output
 
-We also have unit tests so you know this shit is serious.
+Optionally, use `banditize` and/or `deployBandit` to turn a pre-calculated (or empty) `bayesTest` into a multi-armed bandit that can serve recipe recommendations and adapt as new data comes in.
+
+Note, while bayesAB was designed to exploit data related to A/B/etc tests, you can use the package to conduct Bayesian analysis on virtually any vector of data, as long as it can be parametrized by the available functions.
 
 ## Installation
 
+Get the latest stable release from CRAN:
+```{r}
+install.packages("bayesAB")
+```
+
+Or the dev version straight from Github:
 ```{r}
 install.packages("devtools")
 devtools::install_github("frankportman/bayesAB", build_vignettes = TRUE)
@@ -35,7 +44,7 @@ devtools::install_github("frankportman/bayesAB", build_vignettes = TRUE)
 
 ## Usage
 
-For a more in-depth look please check the vignettes: `browseVignettes(package = "bayesAB")`.
+For a more in-depth look please check the package vignettes with `browseVignettes(package = "bayesAB")` or the pre-knit HTML version on CRAN [here](https://CRAN.R-project.org/package=bayesAB/vignettes/introduction.html). Brief example below. Run the following code for a quick overview of bayesAB:
 
 ```{r}
 library(bayesAB)
@@ -48,17 +57,22 @@ plotBeta(2, 3)
 plotNormal(6, 3)
 plotInvGamma(12, 4)
 
-A_binom<- rbinom(100, 1, .5)
+A_binom <- rbinom(100, 1, .5)
 B_binom <- rbinom(100, 1, .6)
 
 A_norm <- rnorm(100, 6, 1.5)
 B_norm <- rnorm(100, 5, 2.5)
 
 # Fit bernoulli and normal tests
-AB1 <- bayesTest(A_binom, B_binom, 
-                 priors = c('alpha' = 1, 'beta' = 1), distribution = 'bernoulli')
-AB2 <- bayesTest(A_norm, B_norm, 
-                 priors = c('m0' = 5, 'k0' = 1, 's_sq0' = 3, 'v0' = 1), distribution = 'normal')
+AB1 <- bayesTest(A_binom, 
+                 B_binom, 
+                 priors = c('alpha' = 1, 'beta' = 1), 
+                 distribution = 'bernoulli')
+                 
+AB2 <- bayesTest(A_norm, 
+                 B_norm, 
+                 priors = c('m0' = 5, 'k0' = 1, 's_sq0' = 3, 'v0' = 1), 
+                 distribution = 'normal')
 
 print(AB1)
 summary(AB1)

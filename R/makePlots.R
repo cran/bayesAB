@@ -10,18 +10,27 @@ plotPriors <- function(bayesAB, ...) {
   vals <- bayesAB$inputs$priors
   labs <- names(vals)
   
-  labChecker <- function(...) all(c(...) %in% labs) 
+  labChecker <- function(...) all(c(...) %in% labs)
   
-  for(rel in funs) {
-    if(labChecker(rel$params)) do.call(rel$plotFun, as.list(c(unname(vals[rel$params]), ...)))
+  out <- list()
+  
+  for(i in seq_along(funs)) {
+    rel <- funs[[i]]
+    if(labChecker(rel$params)) {
+      pri <- list(do.call(rel$plotFun, as.list(c(unname(vals[rel$params]), ...))))
+      names(pri) <- names(funs[i])
+      out <- c(out, pri)
+    }
   }
+  
+  out
   
 }
 
 # Plot samples based on lift, name of var, and data
 samplePlot <- function(A, B, name, percentLift) {
   
-  diff <- (A - B) / B
+  diff <- getLift(A, B)
   cutoff <- percentLift / 100
   
   diff <- data.frame(diff = diff, cutoff = diff < cutoff)
@@ -32,8 +41,12 @@ samplePlot <- function(A, B, name, percentLift) {
   p <- ggplot2::qplot(diff, data = diff, fill = cutoff, binwidth = diff(range(diff)) / 250) + 
     ggplot2::geom_vline(xintercept = cutoff)
   
-  m <- max(ggplot2::ggplot_build(p)$panel$ranges[[1]]$y.range)
-  
+  ## ugly ggplot2 update fix
+  ## deprecate in > 2.2 CRAN release
+  m <- ifelse(packageVersion("ggplot2") >= "2.1.0.9001",
+              max(ggplot2::ggplot_build(p)$layout$panel_ranges[[1]]$y.range),
+              max(ggplot2::ggplot_build(p)$panel$ranges[[1]]$y.range))
+
   xpos <- mean(diff$diff[diff$cutoff == F])
   if(is.nan(xpos)) xpos <-  mean(diff$diff[diff$cutoff == T])
   
@@ -46,7 +59,7 @@ samplePlot <- function(A, B, name, percentLift) {
                             collapse = "")) +
     ggplot2::theme(legend.position = "none")
   
-  print(p) 
+  p 
   
 }
 
@@ -68,19 +81,24 @@ posteriorPlot <- function(A, B, name) {
                             collapse = "")) +
     ggplot2::guides(fill = ggplot2::guide_legend(title = NULL))
   
-  print(p)
+  p
   
 }
 
 # Constructor function for plotSamples and plotPosteriors
 plotConstructor <- function(fun, ...) {
   function(bayesAB, ...) {
+    out <- list()
     for(i in seq_along(bayesAB$posteriors)) {
       p <- bayesAB$posteriors[i]
       n <- names(p)
       p <- unlist(p, recursive = FALSE, use.names = FALSE)
-      fun(A = p[[1]], B = p[[2]], name = n, ...)
+      pl <- fun(A = p[[1]], B = p[[2]], name = n, ...) + theme_bayesAB()
+      pl <- list(pl)
+      names(pl) <- n
+      out <- c(out, pl)
     }
+    return(out)
   }
 }
 

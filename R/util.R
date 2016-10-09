@@ -1,11 +1,19 @@
-getProb <- function(A_samples, B_samples, percent_lift = 0) {
-  mean((100 * (A_samples - B_samples) / B_samples > percent_lift))
+getProb <- function(vals, percent_lift = 0) {
+  mean((100 * vals > percent_lift))
 }
 
-getCredInt <- function(A_samples, B_samples, prop = .9) {
-  diff <- (A_samples - B_samples) / B_samples
+getCredInt <- function(vals, prop = .9) {
   crit <- (1 - prop) / 2
-  quantile(diff, c(crit, 1 - crit))
+  quantile(vals, c(crit, 1 - crit))
+}
+
+getLift <- function(A_samples, B_samples) {
+  (A_samples - B_samples) / B_samples
+}
+
+getPostError <- function(A_samples, B_samples) {
+  #expected loss from switching from B to A
+  mean(B_samples > A_samples) * mean(B_samples[B_samples > A_samples])
 }
 
 dpareto <- function(x, xm, alpha) ifelse(x > xm , alpha * xm ** alpha / (x ** (alpha + 1)), 0)
@@ -27,3 +35,10 @@ listConcat <- function(l1, l2) {
 listOr <- function(e) if(is.list(e)) e else list(e)
 
 isClosed <- function(distribution) grepl("C", distribution)
+
+theme_bayesAB <- function() {
+  ggplot2::theme_minimal() + 
+    ggplot2::theme(axis.text.x = ggplot2::element_text(face = "bold", size = 12), 
+                   axis.text.y = ggplot2::element_text(face = "bold", size = 12), 
+                   title = ggplot2::element_text(size = 12))
+}

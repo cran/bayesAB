@@ -10,6 +10,10 @@
 #' @param samples logical indicating whether sample plots should be generated.
 #' @param ... graphics parameters to be passed to the plotting routines. (For example \code{p}, in prior plots)
 #' 
+#' @note You can either directly plot a bayesTest object (in which case it will plot interactively), or you can save the plot
+#' object to a variable and extract what you need separately. If extracted, you can treat it like any \code{ggplot2} object and
+#' modify it accordingly.
+#' 
 #' @examples
 #' A_pois <- rpois(100, 5)
 #' B_pois <- rpois(100, 4.7)
@@ -19,6 +23,12 @@
 #' plot(AB1)
 #' plot(AB1, area = .95)
 #' plot(AB1, percentLift = 5)
+#' 
+#' p <- plot(AB1)
+#' 
+#' p
+#' p$posteriors$Lambda
+#' \dontrun{p$posteriors$Lambda + ggtitle('yolo') # modify ggplot2 object directly}
 #'
 #' @export
 plot.bayesTest <- function(x, 
@@ -30,13 +40,33 @@ plot.bayesTest <- function(x,
   
   if(length(x$posteriors) != length(percentLift)) stop("Must supply a 'percentLift' for every parameter with a posterior distribution.")
   if(!any(priors, posteriors, samples)) stop("Must specifiy at least one plot to make.")
+  if(isClosed(x$distribution)) stop("Can't plot 'closed form' bayesTest.")
+  
+  pri <- post <- samp <- NULL
+  
+  if(priors) pri <- plotPriors(x, ...)
+  if(posteriors) post <- plotPosteriors(x)
+  if(samples) samp <- plotSamples(x, percentLift = percentLift)
+  
+  out <- list(priors = pri,
+              posteriors = post,
+              samples = samp)
+  
+  class(out) <- "plotBayesTest"
+  
+  return(out)
+  
+}
+
+#' @export
+print.plotBayesTest <- function(x, ...) {
   
   oldPar <- par()$ask
   par(ask = TRUE)
   
-  if(priors) plotPriors(x, ...) # for changing p, for some priorPlot params
-  if(posteriors) plotPosteriors(x)
-  if(samples) plotSamples(x, percentLift = percentLift)
+  plots <- unlist(x, recursive = FALSE)
+  
+  for(p in plots) print(p)
   
   par(ask = oldPar)
   
@@ -81,6 +111,11 @@ print.bayesTest <- function(x, ...) {
 #' @param credInt a vector of length(x$posteriors). Each entry corresponds to the width of credible interval of (A - B) / B to calculate for
 #'        the respective posterior in x. Also on a 'point' scale.
 #' @param ... additional arguments affecting the summary produced.
+#' @return A \code{summaryBayesTest} object which contains summaries of the Posterior distributions, direct probablities that A > B (by
+#' \code{percentLift}), credible intervals on (A - B) / B, and the Posterior Expected Loss on all estimated parameters.
+#' 
+#' @note The Posterior Expected Loss (https://en.wikipedia.org/wiki/Bayes_estimator) is a good indicator of when to end a Bayesian
+#' AB test. If the PEL is lower than the absolute delta of the minimum effect you wish to detect, the test can be reasonably be stopped.
 #' 
 #' @examples
 #' A_pois <- rpois(100, 5)
@@ -101,15 +136,26 @@ summary.bayesTest <- function(object,
   if(length(object$posteriors) != length(credInt)) stop("Must supply a 'credInt' for every parameter with a posterior distribution.")
   if(any(credInt <= 0) | any(credInt >= 1)) stop("Credible interval width ust be in (0, 1).")
   
+  lifts <- lapply(object$posteriors, function(x) getLift(x[[1]], x[[2]]))
   
-  probability <- Map(function(x, y) getProb(x[[1]], x[[2]], y), object$posteriors, percentLift)
-  interval <- Map(function(x, y) getCredInt(x[[1]], x[[2]], y), object$posteriors, credInt)
-
-  out <- list(probability = probability, 
-              interval = interval, 
+  probability <- Map(function(x, y) getProb(x, y), lifts, percentLift)
+  interval <- Map(function(x, y) getCredInt(x, y), lifts, credInt)
+  posteriorSummary <- lapply(object$posteriors, function(x) {
+    lapply(x, function(y) {
+      quantile(y)
+    })
+  })
+  
+  ## Get posterior expected loss
+  posteriorExpectedLoss <- lapply(object$posteriors, function(x) getPostError(x[[1]], x[[2]]))
+  
+  out <- list(posteriorSummary = posteriorSummary,
+              probability = probability, 
+              interval = interval,
+              posteriorExpectedLoss = posteriorExpectedLoss,
               percentLift = percentLift, 
               credInt = credInt)
-
+  
   class(out) <- 'summaryBayesTest'
   
   return(out)
@@ -119,21 +165,28 @@ summary.bayesTest <- function(object,
 #' @export
 print.summaryBayesTest <- function(x, ...) {
   
-  cat('P(A > B) by (', paste0(x$percentLift, collapse = ", "), ')%: \n', sep = "")
+  cat('Quantiles of posteriors for A and B:\n\n')
+  print(x$posteriorSummary)
+  
+  cat('--------------------------------------------\n\n')
+  
+  cat('P(A > B) by (', paste0(x$percentLift, collapse = ", "), ')%: \n\n', sep = "")
   print(x$probability)
   
   cat('--------------------------------------------\n\n')
   
-  cat('Credible Interval on (A - B) / B for interval length(s) (', paste0(x$credInt, collapse = ", "), ') : \n', sep = "")
+  cat('Credible Interval on (A - B) / B for interval length(s) (', paste0(x$credInt, collapse = ", "), ') : \n\n', sep = "")
   print(x$interval)
-
+  
+  cat('--------------------------------------------\n\n')
+  
+  cat('Posterior Expected Loss for choosing B over A:\n\n')
+  print(x$posteriorExpectedLoss)
+  
 }
 
 #' @export
 print.bayesTestClosed <- print.bayesTest
-
-#' @export
-plot.bayesTestClosed <- plot.bayesTest
 
 #' @export
 summary.bayesTestClosed <- function(object, ...) {
@@ -146,4 +199,9 @@ summary.bayesTestClosed <- function(object, ...) {
 print.summaryBayesTestClosed <- function(x, ...) {
   cat('P(A > B):\n')
   print(x$probability)
+}
+
+#' @export
+print.bayesBandit <- function(x, ...) {
+  x$getUpdates()
 }
