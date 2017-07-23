@@ -4,14 +4,12 @@
 \alias{plotLogNormal}
 \title{Plot the PDF of the Log Normal distribution.}
 \usage{
-plotLogNormal(mu, sigma, area = 0.99)
+plotLogNormal(mu, sigma)
 }
 \arguments{
 \item{mu}{\eqn{\mu} parameter of the Log Normal distribution.}
 
 \item{sigma}{\eqn{\sigma} parameter of the Log Normal distribution.}
-
-\item{area}{control x-axis limits (default is set to view 99\% of the area under the density curve)}
 }
 \value{
 The PDF of Log Normal(\eqn{\mu}, \eqn{\sigma^2}).
@@ -24,7 +22,6 @@ The output can be treated like any \code{ggplot2} object and modified accordingl
 }
 \examples{
 plotLogNormal(1, 1)
-plotLogNormal(2, 5)
-\dontrun{plotLogNormal(2, 5) + ggtitle('I hate the default title!')}
+plotLogNormal(2, .5)
+\dontrun{plotLogNormal(2, .5) + ggtitle('I hate the default title!')}
 }
-

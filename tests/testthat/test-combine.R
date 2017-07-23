@@ -12,18 +12,18 @@ AB1 <- bayesTest(A_binom, B_binom,
                  priors = c('alpha' = 1, 'beta' = 1), distribution = 'bernoulli')
 
 AB2 <- bayesTest(A_norm, B_norm, 
-                 priors = c('m0' = 5, 'k0' = 1, 's_sq0' = 3, 'v0' = 1), distribution = 'normal')
+                 priors = c('mu' = 5, 'sd' = 1, 'shape' = 3, 'scale' = 1), distribution = 'normal')
 
 AB3 <- bayesTest(A_binom, B_binom, 
                  priors = c('alpha' = 1, 'beta' = 1), distribution = 'bernoulliC')
 
 AB4 <- bayesTest(A_norm, B_norm, 
-                 priors = c('m0' = 5, 'k0' = 1, 's_sq0' = 3, 'v0' = 1), distribution = 'normal', n_samples = 1e3)
+                 priors = c('mu' = 5, 'sd' = 1, 'shape' = 3, 'scale' = 1), distribution = 'normal', n_samples = 1e3)
 
 test_that("Failures based on input types", {
   
   expect_error(combine(AB1, AB2, f = `*`, params = c('Probability', 'Mu', 'lol'), newName = 'Expectation'),
-               'You must specify only (2) params. One for the first test and one for the second test.', fixed = TRUE)
+               'You must specify only (2) params - one for the first test and one for the second test.', fixed = TRUE)
   
   expect_error(combine(AB1, AB2, f = `*`, params = c('ProbabilityZ', 'Mu'), newName = 'Expectation'),
                "You have specified a `param` name that doesn't exist in the posterior of the first test and/or the second test.",
@@ -39,11 +39,24 @@ test_that("Failures based on input types", {
 
 test_that("Success", {
   
-  successfulTest <- combine(AB1, AB2, f = `*`, params = c('Probability', 'Mu'), newName = 'Expectation')
+  successfulTestMul <- combine(AB1, AB2, f = `*`, params = c('Probability', 'Mu'))
+  successfulTestAdd <- combine(AB1, AB2, f = `+`, params = c('Probability', 'Mu'))
+  successfulTestSub <- combine(AB1, AB2, f = `-`, params = c('Probability', 'Mu'))
+  successfulTestDiv <- combine(AB1, AB2, f = `/`, params = c('Probability', 'Mu'))
   
-  expect_is(successfulTest, "bayesTest")
+  successfulTestMulRename <- combine(AB1, AB2, f = `*`, params = c('Probability', 'Mu'), newName = 'Expectation')
+  successfulTestMulRename2 <- rename(AB1 * grab(AB2, 'Mu'), 'Expectation')
   
-  expect_output(str(successfulTest), "List of 4") # inputs
-  expect_output(str(successfulTest), "List of 3") # outer
+  expect_is(successfulTestMul, "bayesTest")
+  
+  expect_output(str(successfulTestMul), "List of 5") # inputs
+  expect_output(str(successfulTestMul), "List of 2") # outer
+  
+  expect_identical(successfulTestMul, AB1 * grab(AB2, 'Mu'))
+  expect_identical(successfulTestAdd, AB1 + grab(AB2, 'Mu'))
+  expect_identical(successfulTestSub, AB1 - grab(AB2, 'Mu'))
+  expect_identical(successfulTestDiv, AB1 / grab(AB2, 'Mu'))
+  
+  expect_identical(successfulTestMulRename, successfulTestMulRename2)
   
 })

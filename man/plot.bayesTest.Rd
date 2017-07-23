@@ -13,7 +13,7 @@
 \item{percentLift}{a vector of length(x$posteriors). Each entry corresponds to the percent lift ((A - B) / B) to plot for for
 the respective posterior in x. Note this is on a 'point' scale. percentLift = 5 implies you want to test for a 5\% lift.}
 
-\item{priors}{logical indiciating whether prior plots should be generated.}
+\item{priors}{logical indicating whether prior plots should be generated.}
 
 \item{posteriors}{logical indicating whether posterior plots should be generated.}
 
@@ -36,14 +36,11 @@ B_pois <- rpois(100, 4.7)
 AB1 <- bayesTest(A_pois, B_pois, priors = c('shape' = 25, 'rate' = 5), distribution = 'poisson')
 
 plot(AB1)
-plot(AB1, area = .95)
 plot(AB1, percentLift = 5)
 
 p <- plot(AB1)
 
-p
 p$posteriors$Lambda
 \dontrun{p$posteriors$Lambda + ggtitle('yolo') # modify ggplot2 object directly}
 
 }
-

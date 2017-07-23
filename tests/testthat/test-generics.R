@@ -4,7 +4,7 @@ context('generics')
 A_data <- rlnorm(100)
 B_data <- rlnorm(100)
 
-priors <- c('m0' = 5, 'k0' = 3, 's_sq0' = 3, 'v0' = 2)
+priors <- c('mu' = 5, 'sd' = 3, 'shape' = 3, 'scale' = 2)
 
 x <- bayesTest(A_data, B_data, priors = priors, distribution = 'lognormal')
 
@@ -13,6 +13,9 @@ B_binom <- rbinom(100, 1, .6)
 
 AB3 <- bayesTest(A_binom, B_binom, 
                  priors = c('alpha' = 1, 'beta' = 1), distribution = 'bernoulliC')
+
+AB4 <- bayesTest(A_binom, B_binom, 
+                 priors = c('alpha' = 1, 'beta' = 1), distribution = 'bernoulli')
 
 test_that("Failures based on inputs", {
   
@@ -23,6 +26,9 @@ test_that("Failures based on inputs", {
   expect_error(summary(x, percentLift = 0), "Must supply a 'percentLift' for every parameter with a posterior distribution.")
   
   expect_error(summary(x, credInt = 0), "Must supply a 'credInt' for every parameter with a posterior distribution.")
+  
+  expect_error(c(x, AB4), "Unable to concatenate. Mismatches in (A_data, B_data, priors, distribution). All inputs must be the same (except n_samples).",
+               fixed = TRUE)
 
 })
 
@@ -30,6 +36,7 @@ test_that("Success", {
   
   expect_silent(plot(x))
   expect_silent(plot(x, rep(.5, 4)))
+  expect_equal(length(plot(x, posteriors = FALSE, samples = FALSE)$priors), 2)
   
   expect_silent(print(plot(x)))
   expect_silent(print(plot(x, rep(.5, 4))))
@@ -42,5 +49,10 @@ test_that("Success", {
   
   expect_output(print(summary(x)), 'P(A > B)', fixed = TRUE)
   expect_output(print(summary(AB3)), 'P(A > B)', fixed = TRUE)
+  
+  expect_is(c(x, x), "bayesTest")
+  expect_identical(rep(x$posteriors$Mu$A, 2), c(x, x)$posteriors$Mu$A)
+  expect_identical(rep(x$posteriors$Mu$B, 2), c(x, x)$posteriors$Mu$B)
+  expect_identical(rep(x$posteriors$Mu$A, 3), c(x, x, x)$posteriors$Mu$A)
   
 })
