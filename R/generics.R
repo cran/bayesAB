@@ -13,6 +13,8 @@
 #' @note You can either directly plot a bayesTest object (in which case it will plot interactively), or you can save the plot
 #' object to a variable and extract what you need separately. If extracted, you can treat it like any \code{ggplot2} object and
 #' modify it accordingly.
+#' 
+#' Plots are slightly truncated on the extremes to solve the general case of potentially long tail-ends.
 #'
 #' @examples
 #' A_pois <- rpois(100, 5)
@@ -40,11 +42,11 @@ plot.bayesTest <- function(x,
   if(!any(priors, posteriors, samples)) stop("Must specifiy at least one plot to make.")
   if(isClosed(x$inputs$distribution)) stop("Can't plot 'closed form' bayesTest.")
 
-  pri <- post <- samp <- NULL
+  pri <- post <- samp <- list() # Initialize empty list
 
   if(priors) pri <- plotPriors(x)
   if(posteriors) post <- plotPosteriors(x)
-  if(samples) samp <- plotSamples(x, percentLift = percentLift)
+  if(samples) samp <- plotSamples(x, percentLift)
 
   out <- list(
     priors = pri,
@@ -87,7 +89,9 @@ print.bayesTest <- function(x, ...) {
   print(cbind(A_data = summ_outA, B_data = summ_outB))
 
   cat('--------------------------------------------\n')
-  cat('Priors used for the calculation: \n')
+  cat('Conjugate Prior Distribution: ')
+  cat(x$prior, '\n')
+  cat('Conjugate Prior Parameters: \n')
   print(x$inputs$priors)
 
   cat('--------------------------------------------\n')
