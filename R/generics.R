@@ -23,11 +23,12 @@
 #' AB1 <- bayesTest(A_pois, B_pois, priors = c('shape' = 25, 'rate' = 5), distribution = 'poisson')
 #'
 #' plot(AB1)
-#' plot(AB1, percentLift = 5)
+#' \donttest{plot(AB1, percentLift = 5)}
 #'
-#' p <- plot(AB1)
-#'
-#' p$posteriors$Lambda
+#' \donttest{
+#'     p <- plot(AB1)
+#'     p$posteriors$Lambda
+#' }
 #' \dontrun{p$posteriors$Lambda + ggtitle('yolo') # modify ggplot2 object directly}
 #'
 #' @export
@@ -146,8 +147,8 @@ summary.bayesTest <- function(object,
   lifts <- lapply(object$posteriors, function(x) do.call(getLift, unname(x)))
   posteriorExpectedLoss <- lapply(object$posteriors, function(x) do.call(getPostError, unname(x)))
 
-  probability <- Map(function(x, y) getProb(x, y), lifts, percentLift)
-  interval <- Map(function(x, y) getCredInt(x, y), lifts, credInt)
+  probability <- Map(getProb, lifts, percentLift)
+  interval <- Map(getCredInt, lifts, credInt)
 
   posteriorSummary <- lapply(object$posteriors, function(x) lapply(x, function(y) quantile(y)))
 

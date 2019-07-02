@@ -16,8 +16,8 @@ bayesTest(A_data, B_data, priors, n_samples = 1e+05,
 \item{priors}{Named vector or named list providing priors as required by the specified distribution:
 \itemize{
           \item     For 'bernoulli' distribution \code{list("alpha" = val1, "beta" = val2)}
-          \item     For 'normal' distribution \code{c("mu" = val1, "sd" = val2, "shape" = val3, "scale" = val4)}
-          \item     For 'lognormal' distribution \code{c("mu" = val1, "sd" = val2, "shape" = val3, "scale" = val4)}
+          \item     For 'normal' distribution \code{c("mu" = val1, "lambda" = val2, "alpha" = val3, "beta" = val4)}
+          \item     For 'lognormal' distribution \code{c("mu" = val1, "lambda" = val2, "alpha" = val3, "beta" = val4)}
           \item     For 'poisson' distribution \code{c("shape" = val1, "rate" = val2)}
           \item     For 'exponential' distribution \code{list("shape" = val1, "rate" = val2)}
           \item     For 'uniform' distribution \code{c("xm" = val1, "alpha" = val2)}
@@ -101,7 +101,7 @@ rate of decay.
 \note{
 For 'closed form' tests, you do not get a distribution over the posterior, but simply P(A > B) for the parameter in question.
 
-Choosing priors correctly is very important. Please see http://fportman.com/blog/bayesab-0-dot-7-0-plus-a-primer-on-priors/ for a detailed example of choosing priors
+Choosing priors correctly is very important. Please see http://fportman.com/writing/bayesab-0-dot-7-0-plus-a-primer-on-priors/ for a detailed example of choosing priors
 within bayesAB. Here are some ways to leverage objective/diffuse (assigning equal probability to all values) priors:
 
 \itemize{\item \code{Beta}(1, 1)

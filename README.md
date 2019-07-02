@@ -49,8 +49,8 @@ devtools::install_github("frankportman/bayesAB", build_vignettes = TRUE)
 
 Some useful links from my blog with `bayesAB` examples (and pictures!!):
 
-- [bayesAB: A New R Package for Bayesian AB Testing](http://fportman.com/blog/bayesab-a-new-r-package-for-bayesian-ab-testing/)
-- [bayesAB 0.7.0 + a Primer on Priors](http://fportman.com/blog/bayesab-0-dot-7-0-plus-a-primer-on-priors/)
+- [bayesAB: A New R Package for Bayesian AB Testing](http://fportman.com/writing/bayesab-a-new-r-package-for-bayesian-ab-testing/)
+- [bayesAB 0.7.0 + a Primer on Priors](http://fportman.com/writing/bayesab-0-dot-7-0-plus-a-primer-on-priors/)
 
 For a more in-depth look please check the package vignettes with `browseVignettes(package = "bayesAB")` or the pre-knit HTML version on CRAN [here](https://CRAN.R-project.org/package=bayesAB/vignettes/introduction.html). Brief example below. Run the following code for a quick overview of bayesAB:
 
@@ -76,7 +76,7 @@ plotInvGamma(12, 4)
 A_binom <- rbinom(100, 1, .5)
 B_binom <- rbinom(100, 1, .55)
 
-# Fit bernoulli and normal tests
+# Fit bernoulli test
 AB1 <- bayesTest(A_binom,
                  B_binom,
                  priors = c('alpha' = 1, 'beta' = 1),
