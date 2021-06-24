@@ -1,6 +1,6 @@
 # bayesAB
 
-[![Travis-CI Build Status](https://travis-ci.org/FrankPortman/bayesAB.svg?branch=master)](https://travis-ci.org/FrankPortman/bayesAB) [![codecov](https://codecov.io/gh/FrankPortman/bayesAB/branch/master/graph/badge.svg)](https://codecov.io/gh/FrankPortman/bayesAB) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/bayesAB)](https://CRAN.R-project.org/package=bayesAB)
+[![Travis-CI Build Status](https://travis-ci.com/FrankPortman/bayesAB.svg?branch=master)](https://travis-ci.com/github/FrankPortman/bayesAB) [![codecov](https://codecov.io/gh/FrankPortman/bayesAB/branch/master/graph/badge.svg)](https://codecov.io/gh/FrankPortman/bayesAB) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/bayesAB)](https://CRAN.R-project.org/package=bayesAB)
 
 
 ## Fast Bayesian Methods for AB Testing
@@ -157,7 +157,7 @@ $Probability
 
 --------------------------------------------
 
-Posterior Expected Loss for choosing B over A:
+Posterior Expected Loss for choosing A over B:
 
 $Probability
 [1] 0.03105786
